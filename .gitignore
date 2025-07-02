@@ -1,0 +1,46 @@
+# Arquivos de cache e bytecode do Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Pastas de ambiente virtual
+
+.venv
+venv/
+env/
+.env
+
+# Artefatos de build e empacotamento (PyInstaller)
+
+/build/
+/dist/
+\*.spec
+
+# Banco de dados SQLite local
+
+# Geralmente não se versiona o banco de dados com os dados.
+
+# A estrutura do banco é criada pelo seu código.
+
+\*.db
+\*.sqlite
+\*.sqlite3
+
+# Arquivos de IDEs e editores de texto
+
+.vscode/
+.idea/
+\*.suo
+*.ntvs*
+\*.njsproj
+\*.sln
+
+# Arquivos de log
+
+\*.log
+
+# Arquivos de sistema operacional
+
+.DS\_Store
+Thumbs.db

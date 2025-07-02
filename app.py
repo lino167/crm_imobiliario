@@ -1,15 +1,14 @@
-
 import customtkinter as ctk
-from ui import ClientsFrame, PropertiesFrame
-    
+from ui import ClientsFrame, PropertiesFrame, InteractionsFrame
+
+#vamos mantê-la caso queira adicionar novas telas no futuro.
 class PlaceholderFrame(ctk.CTkFrame):
         def __init__(self, parent, title):
             super().__init__(parent, fg_color="transparent")
-            self.grid_columnconfigure(0, weight=1)
-            self.grid_rowconfigure(0, weight=1)
             label = ctk.CTkLabel(self, text=f"Área de {title}", font=ctk.CTkFont(size=24, weight="bold"))
-            label.grid(row=0, column=0, padx=20, pady=20)
-    
+            label.pack(pady=100)
+
+# --- Classe Principal da Aplicação ---
 class App(ctk.CTk):
         def __init__(self, db):
             super().__init__()
@@ -17,7 +16,8 @@ class App(ctk.CTk):
             self.title("CRM Imobiliário Pro")
             self.geometry("1200x700")
             self.minsize(1000, 600)
-    
+
+            # ... (Navegação e Grid - NENHUMA MUDANÇA AQUI) ...
             self.grid_columnconfigure(1, weight=1)
             self.grid_rowconfigure(0, weight=1)
             self.nav_frame = ctk.CTkFrame(self, width=200, corner_radius=0)
@@ -35,27 +35,31 @@ class App(ctk.CTk):
             self.content_frame.grid(row=0, column=1, sticky="nswe", padx=(10, 20), pady=20)
             self.content_frame.grid_columnconfigure(0, weight=1)
             self.content_frame.grid_rowconfigure(0, weight=1)
-    
+
+            # --- Inicialização dos Frames de Conteúdo (AQUI ESTÁ A MUDANÇA) ---
             self.clients_frame = ClientsFrame(self.content_frame, self.db)
             self.properties_frame = PropertiesFrame(self.content_frame, self.db)
-            self.interactions_frame = PlaceholderFrame(self.content_frame, "Registro de Interações")
-    
+            # Passamos a referência de clients_frame para interactions_frame
+            self.interactions_frame = InteractionsFrame(self.content_frame, self.db, self.clients_frame)
+
+            # Exibir o frame inicial
             self.show_clients_frame()
-    
+
         def show_frame(self, frame_to_show):
-            self.clients_frame.grid_forget()
-            self.properties_frame.grid_forget()
-            self.interactions_frame.grid_forget()
+            for frame in (self.clients_frame, self.properties_frame, self.interactions_frame):
+                frame.grid_forget()
             frame_to_show.grid(row=0, column=0, sticky="nswe")
-    
+
         def show_clients_frame(self):
             self.clients_frame.populate_treeview()
             self.show_frame(self.clients_frame)
-    
+
         def show_properties_frame(self):
             self.properties_frame.populate_treeview()
             self.show_frame(self.properties_frame)
             
         def show_interactions_frame(self):
+            self.interactions_frame.update_client_list()
+            self.interactions_frame.populate_treeview()
             self.show_frame(self.interactions_frame)
     

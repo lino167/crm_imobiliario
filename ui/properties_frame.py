@@ -127,8 +127,8 @@ class PropertiesFrame(ctk.CTkFrame):
             messagebox.showerror("Erro de Validação", "O campo 'Preço' deve ser um número válido.")
             return
 
-        query = "INSERT INTO imoveis (codigo_ref, endereco, tipo, preco_venda) VALUES (?, ?, ?, ?)"
-        params = (codigo, self.entry_endereco.get(), self.combo_tipo.get(), preco)
+        query = "INSERT INTO imoveis (codigo_ref, endereco, tipo, preco_venda, status) VALUES (?, ?, ?, ?, ?)"
+        params = (codigo, self.entry_endereco.get(), self.combo_tipo.get(), preco, "Disponível")
         
         try:
             self.db.execute_query(query, params)

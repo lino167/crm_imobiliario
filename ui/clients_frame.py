@@ -21,50 +21,70 @@ class ClientsFrame(ctk.CTkFrame):
         self.form_frame.grid(row=0, column=0, sticky="ew", padx=10, pady=10)
         self.form_frame.grid_columnconfigure((1, 3), weight=1)
 
-        # --- Widgets do Formulário ---
-        # Linha 1: Informações Pessoais
-        ctk.CTkLabel(self.form_frame, text="Nome Completo:").grid(row=0, column=0, padx=(10,5), pady=5, sticky="w")
-        self.entry_nome = ctk.CTkEntry(self.form_frame, placeholder_text="Nome do cliente")
-        self.entry_nome.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
-
-        ctk.CTkLabel(self.form_frame, text="Telefone:").grid(row=0, column=2, padx=(10,5), pady=5, sticky="w")
-        self.entry_telefone = ctk.CTkEntry(self.form_frame, placeholder_text="(00) 90000-0000")
-        self.entry_telefone.grid(row=0, column=3, padx=(5,10), pady=5, sticky="ew")
-
-        # Linha 2: Informações de Contato
-        ctk.CTkLabel(self.form_frame, text="Email:").grid(row=1, column=0, padx=(10,5), pady=5, sticky="w")
-        self.entry_email = ctk.CTkEntry(self.form_frame, placeholder_text="email@exemplo.com")
-        self.entry_email.grid(row=1, column=1, padx=5, pady=5, sticky="ew")
-
-        ctk.CTkLabel(self.form_frame, text="Próximo Contato:").grid(row=1, column=2, padx=(10,5), pady=5, sticky="w")
-        self.entry_prox_contato = ctk.CTkEntry(self.form_frame, placeholder_text="DD/MM/AAAA")
-        self.entry_prox_contato.grid(row=1, column=3, padx=(5,10), pady=5, sticky="ew")
-
-        # --- Seção "Perfil de Busca" ---
-        profile_label = ctk.CTkLabel(self.form_frame, text="Perfil de Busca do Cliente", font=ctk.CTkFont(size=12, weight="bold"))
-        profile_label.grid(row=2, column=0, columnspan=4, padx=10, pady=(10,0), sticky="w")
-
-        # Linha 3: Perfil de Busca
-        ctk.CTkLabel(self.form_frame, text="Tipo de Imóvel:").grid(row=3, column=0, padx=(10,5), pady=5, sticky="w")
-        self.combo_tipo_interesse = ctk.CTkComboBox(self.form_frame, values=["", "Apartamento", "Casa", "Terreno", "Comercial"])
-        self.combo_tipo_interesse.grid(row=3, column=1, padx=5, pady=5, sticky="ew")
-
-        ctk.CTkLabel(self.form_frame, text="Quartos (mín.):").grid(row=3, column=2, padx=(10,5), pady=5, sticky="w")
-        self.entry_quartos_min = ctk.CTkEntry(self.form_frame, placeholder_text="Ex: 3")
-        self.entry_quartos_min.grid(row=3, column=3, padx=(5,10), pady=5, sticky="ew")
+        # --- Seção: Informações Pessoais ---
+        ctk.CTkLabel(self.form_frame, text="Informações Pessoais", font=ctk.CTkFont(size=12, weight="bold")).grid(row=0, column=0, columnspan=4, padx=10, pady=(10,0), sticky="w")
         
-        # Linha 4: Perfil de Busca
-        ctk.CTkLabel(self.form_frame, text="Preço (máx.) R$:").grid(row=4, column=0, padx=(10,5), pady=5, sticky="w")
-        self.entry_preco_max = ctk.CTkEntry(self.form_frame, placeholder_text="Ex: 500000.00")
-        self.entry_preco_max.grid(row=4, column=1, padx=5, pady=5, sticky="ew")
+        ctk.CTkLabel(self.form_frame, text="Nome Completo:").grid(row=1, column=0, padx=(10,5), pady=5, sticky="w")
+        self.entry_nome = ctk.CTkEntry(self.form_frame, placeholder_text="Nome do cliente")
+        self.entry_nome.grid(row=1, column=1, columnspan=3, padx=(0,10), pady=5, sticky="ew")
+        
+        ctk.CTkLabel(self.form_frame, text="Telefone:").grid(row=2, column=0, padx=(10,5), pady=5, sticky="w")
+        self.entry_telefone = ctk.CTkEntry(self.form_frame, placeholder_text="(00) 90000-0000")
+        self.entry_telefone.grid(row=2, column=1, padx=5, pady=5, sticky="ew")
 
-        ctk.CTkLabel(self.form_frame, text="Status:").grid(row=4, column=2, padx=(10,5), pady=5, sticky="w")
+        ctk.CTkLabel(self.form_frame, text="Email:").grid(row=2, column=2, padx=(10,5), pady=5, sticky="w")
+        self.entry_email = ctk.CTkEntry(self.form_frame, placeholder_text="email@exemplo.com")
+        self.entry_email.grid(row=2, column=3, padx=(5,10), pady=5, sticky="ew")
+
+        # --- Seção: Perfil de Busca Detalhado ---
+        ctk.CTkLabel(self.form_frame, text="Perfil de Busca do Imóvel", font=ctk.CTkFont(size=12, weight="bold")).grid(row=3, column=0, columnspan=4, padx=10, pady=(10,0), sticky="w")
+        
+        ctk.CTkLabel(self.form_frame, text="Tipo de Imóvel:").grid(row=4, column=0, padx=(10,5), pady=5, sticky="w")
+        self.combo_tipo_interesse = ctk.CTkComboBox(self.form_frame, values=["", "Apartamento", "Casa", "Sobrado", "Terreno", "Comercial"])
+        self.combo_tipo_interesse.grid(row=4, column=1, padx=5, pady=5, sticky="ew")
+
+        ctk.CTkLabel(self.form_frame, text="Finalidade:").grid(row=4, column=2, padx=(10,5), pady=5, sticky="w")
+        self.combo_finalidade = ctk.CTkComboBox(self.form_frame, values=["", "Moradia", "Investimento"])
+        self.combo_finalidade.grid(row=4, column=3, padx=(5,10), pady=5, sticky="ew")
+
+        ctk.CTkLabel(self.form_frame, text="Preço Mínimo (R$):").grid(row=5, column=0, padx=(10,5), pady=5, sticky="w")
+        self.entry_preco_min = ctk.CTkEntry(self.form_frame, placeholder_text="Ex: 300000")
+        self.entry_preco_min.grid(row=5, column=1, padx=5, pady=5, sticky="ew")
+        
+        ctk.CTkLabel(self.form_frame, text="Preço Máximo (R$):").grid(row=5, column=2, padx=(10,5), pady=5, sticky="w")
+        self.entry_preco_max = ctk.CTkEntry(self.form_frame, placeholder_text="Ex: 500000")
+        self.entry_preco_max.grid(row=5, column=3, padx=(5,10), pady=5, sticky="ew")
+
+        ctk.CTkLabel(self.form_frame, text="Quartos (mín.):").grid(row=6, column=0, padx=(10,5), pady=5, sticky="w")
+        self.entry_quartos_min = ctk.CTkEntry(self.form_frame, placeholder_text="Ex: 3")
+        self.entry_quartos_min.grid(row=6, column=1, padx=5, pady=5, sticky="ew")
+
+        ctk.CTkLabel(self.form_frame, text="Banheiros (mín.):").grid(row=6, column=2, padx=(10,5), pady=5, sticky="w")
+        self.entry_banheiros_min = ctk.CTkEntry(self.form_frame, placeholder_text="Ex: 2")
+        self.entry_banheiros_min.grid(row=6, column=3, padx=(5,10), pady=5, sticky="ew")
+
+        ctk.CTkLabel(self.form_frame, text="Vagas Garagem (mín.):").grid(row=7, column=0, padx=(10,5), pady=5, sticky="w")
+        self.entry_vagas_min = ctk.CTkEntry(self.form_frame, placeholder_text="Ex: 1")
+        self.entry_vagas_min.grid(row=7, column=1, padx=5, pady=5, sticky="ew")
+
+        ctk.CTkLabel(self.form_frame, text="Bairros de Interesse:").grid(row=7, column=2, padx=(10,5), pady=5, sticky="w")
+        self.entry_bairros_interesse = ctk.CTkEntry(self.form_frame, placeholder_text="Ex: Vila Nova, Velha, Centro")
+        self.entry_bairros_interesse.grid(row=7, column=3, padx=(5,10), pady=5, sticky="ew")
+
+        # --- Seção: Status e Follow-up ---
+        ctk.CTkLabel(self.form_frame, text="Status e Acompanhamento", font=ctk.CTkFont(size=12, weight="bold")).grid(row=8, column=0, columnspan=4, padx=10, pady=(10,0), sticky="w")
+        
+        ctk.CTkLabel(self.form_frame, text="Status do Cliente:").grid(row=9, column=0, padx=(10,5), pady=5, sticky="w")
         self.combo_status = ctk.CTkComboBox(self.form_frame, values=["Prospect", "Contatado", "Visitando", "Em Negociação", "Comprador", "Inativo"])
-        self.combo_status.grid(row=4, column=3, padx=(5,10), pady=5, sticky="ew")
+        self.combo_status.grid(row=9, column=1, padx=5, pady=5, sticky="ew")
+
+        ctk.CTkLabel(self.form_frame, text="Próximo Contato:").grid(row=9, column=2, padx=(10,5), pady=5, sticky="w")
+        self.entry_prox_contato = ctk.CTkEntry(self.form_frame, placeholder_text="DD/MM/AAAA")
+        self.entry_prox_contato.grid(row=9, column=3, padx=(5,10), pady=5, sticky="ew")
 
         # --- Frame de Botões ---
         self.button_frame = ctk.CTkFrame(self.form_frame)
-        self.button_frame.grid(row=5, column=0, columnspan=4, padx=10, pady=10, sticky="ew")
+        self.button_frame.grid(row=10, column=0, columnspan=4, padx=10, pady=10, sticky="ew")
         self.button_frame.grid_columnconfigure((0, 1, 2, 3, 4), weight=1)
 
         self.btn_add = ctk.CTkButton(self.button_frame, text="Adicionar Cliente", command=self.add_client)
@@ -140,13 +160,18 @@ class ClientsFrame(ctk.CTkFrame):
             data = client_data[0]
             self.clear_fields(clear_selection=False)
             self.entry_nome.insert(0, data[2])
+            self.entry_telefone.insert(0, data[5])
+            self.entry_email.insert(0, data[6])
             self.combo_status.set(data[3] or "")
-            self.entry_telefone.insert(0, data[5] or "")
-            self.entry_email.insert(0, data[6] or "")
-            self.entry_prox_contato.insert(0, data[12] or "")
-            self.combo_tipo_interesse.set(data[14] or "")
-            self.entry_quartos_min.insert(0, str(data[15] or ""))
-            self.entry_preco_max.insert(0, str(data[16] or ""))
+            self.entry_prox_contato.insert(0, data[7] or "")
+            self.combo_tipo_interesse.set(data[9] or "")
+            self.entry_preco_min.insert(0, str(data[10] or ""))
+            self.entry_preco_max.insert(0, str(data[11] or ""))
+            self.entry_quartos_min.insert(0, str(data[12] or ""))
+            self.entry_banheiros_min.insert(0, str(data[13] or ""))
+            self.entry_vagas_min.insert(0, str(data[14] or ""))
+            self.entry_bairros_interesse.insert(0, data[15] or "")
+            self.combo_finalidade.set(data[16] or "")
 
     def add_client(self):
         nome = self.entry_nome.get().strip()
@@ -157,17 +182,23 @@ class ClientsFrame(ctk.CTkFrame):
         data_cadastro = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         try:
-            quartos_min = int(self.entry_quartos_min.get()) if self.entry_quartos_min.get() else None
+            preco_min = float(self.entry_preco_min.get()) if self.entry_preco_min.get() else None
             preco_max = float(self.entry_preco_max.get()) if self.entry_preco_max.get() else None
+            quartos_min = int(self.entry_quartos_min.get()) if self.entry_quartos_min.get() else None
+            banheiros_min = int(self.entry_banheiros_min.get()) if self.entry_banheiros_min.get() else None
+            vagas_min = int(self.entry_vagas_min.get()) if self.entry_vagas_min.get() else None
         except ValueError:
-            messagebox.showerror("Erro de Validação", "Os campos 'Quartos' e 'Preço' devem ser números válidos.")
+            messagebox.showerror("Erro de Validação", "Os campos de preço, quartos, banheiros e vagas devem ser números válidos.")
             return
 
         query = """INSERT INTO clientes (data_cadastro, nome_completo, status, telefone, email, proximo_contato, 
-                                        tipo_imovel_interesse, quartos_min_interesse, preco_max_interesse) 
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"""
+                                        tipo_imovel_interesse, preco_min_interesse, preco_max_interesse, 
+                                        quartos_min_interesse, banheiros_min_interesse, vagas_min_interesse, 
+                                        bairros_interesse, finalidade) 
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"""
         params = (data_cadastro, nome, self.combo_status.get(), self.entry_telefone.get(), self.entry_email.get(), 
-                  self.entry_prox_contato.get(), self.combo_tipo_interesse.get(), quartos_min, preco_max)
+                  self.entry_prox_contato.get(), self.combo_tipo_interesse.get(), preco_min, preco_max, 
+                  quartos_min, banheiros_min, vagas_min, self.entry_bairros_interesse.get(), self.combo_finalidade.get())
         
         try:
             self.db.execute_query(query, params)
@@ -186,17 +217,23 @@ class ClientsFrame(ctk.CTkFrame):
         client_id = self.tree.item(selected_item, 'values')[0]
         
         try:
-            quartos_min = int(self.entry_quartos_min.get()) if self.entry_quartos_min.get() else None
+            preco_min = float(self.entry_preco_min.get()) if self.entry_preco_min.get() else None
             preco_max = float(self.entry_preco_max.get()) if self.entry_preco_max.get() else None
+            quartos_min = int(self.entry_quartos_min.get()) if self.entry_quartos_min.get() else None
+            banheiros_min = int(self.entry_banheiros_min.get()) if self.entry_banheiros_min.get() else None
+            vagas_min = int(self.entry_vagas_min.get()) if self.entry_vagas_min.get() else None
         except ValueError:
-            messagebox.showerror("Erro de Validação", "Os campos 'Quartos' e 'Preço' devem ser números válidos.")
+            messagebox.showerror("Erro de Validação", "Os campos de preço, quartos, banheiros e vagas devem ser números válidos.")
             return
 
         query = """UPDATE clientes SET nome_completo=?, status=?, telefone=?, email=?, proximo_contato=?,
-                                     tipo_imovel_interesse=?, quartos_min_interesse=?, preco_max_interesse=?
+                                     tipo_imovel_interesse=?, preco_min_interesse=?, preco_max_interesse=?,
+                                     quartos_min_interesse=?, banheiros_min_interesse=?, vagas_min_interesse=?,
+                                     bairros_interesse=?, finalidade=?
                    WHERE id=?"""
         params = (self.entry_nome.get(), self.combo_status.get(), self.entry_telefone.get(), self.entry_email.get(), 
-                  self.entry_prox_contato.get(), self.combo_tipo_interesse.get(), quartos_min, preco_max, client_id)
+                  self.entry_prox_contato.get(), self.combo_tipo_interesse.get(), preco_min, preco_max, 
+                  quartos_min, banheiros_min, vagas_min, self.entry_bairros_interesse.get(), self.combo_finalidade.get(), client_id)
         
         try:
             self.db.execute_query(query, params)
@@ -213,8 +250,13 @@ class ClientsFrame(ctk.CTkFrame):
         self.combo_status.set("")
         self.entry_prox_contato.delete(0, 'end')
         self.combo_tipo_interesse.set("")
-        self.entry_quartos_min.delete(0, 'end')
+        self.entry_preco_min.delete(0, 'end')
         self.entry_preco_max.delete(0, 'end')
+        self.entry_quartos_min.delete(0, 'end')
+        self.entry_banheiros_min.delete(0, 'end')
+        self.entry_vagas_min.delete(0, 'end')
+        self.entry_bairros_interesse.delete(0, 'end')
+        self.combo_finalidade.set("")
         if clear_selection and self.tree.focus():
             self.tree.selection_remove(self.tree.focus())
 
@@ -270,27 +312,38 @@ class ClientsFrame(ctk.CTkFrame):
             return
 
         client_id = self.tree.item(selected_item, 'values')[0]
-        query_client_profile = "SELECT tipo_imovel_interesse, quartos_min_interesse, preco_max_interesse FROM clientes WHERE id = ?"
+        query_client_profile = """SELECT tipo_imovel_interesse, preco_min_interesse, preco_max_interesse, 
+                                         quartos_min_interesse, banheiros_min_interesse, vagas_min_interesse 
+                                  FROM clientes WHERE id = ?"""
         profile = self.db.fetch_query(query_client_profile, (client_id,))
         
         if not profile:
             messagebox.showerror("Erro", "Não foi possível encontrar o perfil do cliente selecionado.")
             return
 
-        tipo_interesse, quartos_min, preco_max = profile[0]
+        tipo, p_min, p_max, quartos, banheiros, vagas = profile[0]
 
-        query = "SELECT codigo_ref, tipo, endereco, quartos, preco_venda FROM imoveis WHERE status = 'Disponível'"
+        query = "SELECT codigo_ref, tipo, bairro, quartos, banheiros, vagas, preco_venda FROM imoveis WHERE status = 'Disponível'"
         params = []
         
-        if tipo_interesse:
+        if tipo:
             query += " AND tipo = ?"
-            params.append(tipo_interesse)
-        if quartos_min is not None and quartos_min > 0:
-            query += " AND quartos >= ?"
-            params.append(quartos_min)
-        if preco_max is not None and preco_max > 0:
+            params.append(tipo)
+        if p_min is not None:
+            query += " AND preco_venda >= ?"
+            params.append(p_min)
+        if p_max is not None:
             query += " AND preco_venda <= ?"
-            params.append(preco_max)
+            params.append(p_max)
+        if quartos is not None:
+            query += " AND quartos >= ?"
+            params.append(quartos)
+        if banheiros is not None:
+            query += " AND banheiros >= ?"
+            params.append(banheiros)
+        if vagas is not None:
+            query += " AND vagas >= ?"
+            params.append(vagas)
             
         query += " ORDER BY preco_venda"
 
@@ -298,14 +351,10 @@ class ClientsFrame(ctk.CTkFrame):
             results = self.db.fetch_query(query, tuple(params))
             
             columns = {
-                "Código Ref.": 120,
-                "Tipo": 120,
-                "Endereço": 250,
-                "Quartos": 80,
-                "Preço (R$)": 120
+                "Código Ref.": 100, "Tipo": 100, "Bairro": 150, "Quartos": 60,
+                "Banheiros": 60, "Vagas": 60, "Preço (R$)": 120
             }
             
             MatchResultsWindow(master=self.app, title="Imóveis Compatíveis", results=results, columns=columns)
-
         except Exception as e:
             messagebox.showerror("Erro na Busca", f"Ocorreu um erro ao buscar os imóveis:\n{e}")

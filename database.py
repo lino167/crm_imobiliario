@@ -42,16 +42,20 @@ class Database:
                 fonte TEXT,
                 telefone TEXT,
                 email TEXT,
-                perfil_imovel TEXT,
-                bairros_interesse TEXT,
-                tipo_imovel TEXT,
-                quartos_min INTEGER,
-                preco_max REAL,
                 proximo_contato TEXT,
                 observacoes TEXT,
+                
+                -- Perfil de Busca Detalhado --
                 tipo_imovel_interesse TEXT,
+                preco_min_interesse REAL,
+                preco_max_interesse REAL,
                 quartos_min_interesse INTEGER,
-                preco_max_interesse REAL
+                banheiros_min_interesse INTEGER,
+                vagas_min_interesse INTEGER,
+                bairros_interesse TEXT,
+                finalidade TEXT, -- Ex: Moradia, Investimento
+                urgencia TEXT, -- Ex: Com Urgência, Flexível, Sondando
+                caracteristicas_desejadas TEXT -- Ex: Sacada com churrasqueira, andar alto
             )
             """)
 

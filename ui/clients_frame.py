@@ -20,6 +20,7 @@ class ClientsFrame(ctk.CTkFrame):
         self.form_frame.grid_columnconfigure((1, 3), weight=1)
 
         # --- Widgets do Formulário ---
+        # Linha 1
         ctk.CTkLabel(self.form_frame, text="Nome Completo:").grid(row=0, column=0, padx=(10,5), pady=5, sticky="w")
         self.entry_nome = ctk.CTkEntry(self.form_frame, placeholder_text="Nome do cliente")
         self.entry_nome.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
@@ -28,6 +29,7 @@ class ClientsFrame(ctk.CTkFrame):
         self.entry_telefone = ctk.CTkEntry(self.form_frame, placeholder_text="(00) 90000-0000")
         self.entry_telefone.grid(row=0, column=3, padx=(5,10), pady=5, sticky="ew")
 
+        # Linha 2
         ctk.CTkLabel(self.form_frame, text="Email:").grid(row=1, column=0, padx=(10,5), pady=5, sticky="w")
         self.entry_email = ctk.CTkEntry(self.form_frame, placeholder_text="email@exemplo.com")
         self.entry_email.grid(row=1, column=1, padx=5, pady=5, sticky="ew")
@@ -36,6 +38,7 @@ class ClientsFrame(ctk.CTkFrame):
         self.combo_status = ctk.CTkComboBox(self.form_frame, values=["Prospect", "Contatado", "Visitando", "Em Negociação", "Comprador", "Inativo"])
         self.combo_status.grid(row=1, column=3, padx=(5,10), pady=5, sticky="ew")
 
+        # Linha 3 (Nova)
         ctk.CTkLabel(self.form_frame, text="Próximo Contato:").grid(row=2, column=0, padx=(10,5), pady=5, sticky="w")
         self.entry_prox_contato = ctk.CTkEntry(self.form_frame, placeholder_text="DD/MM/AAAA")
         self.entry_prox_contato.grid(row=2, column=1, padx=5, pady=5, sticky="ew")
@@ -168,7 +171,7 @@ class ClientsFrame(ctk.CTkFrame):
     def update_button_states(self):
         """Ativa ou desativa os botões baseando-se no status da licença."""
         if self.app.is_activated:
-            self.btn_add.configure(state="normal")
+            self.btn_add.configure(state="normal", text="Adicionar Cliente")
             self.btn_update.configure(state="normal")
             self.btn_delete.configure(state="normal")
         else:
@@ -203,3 +206,27 @@ class ClientsFrame(ctk.CTkFrame):
         query = "SELECT id, nome_completo FROM clientes ORDER BY nome_completo"
         clients = self.db.fetch_query(query)
         return [f"{client[0]}: {client[1]}" for client in clients] if clients else []
+
+    def select_client_by_id(self, client_id_to_select):
+        """
+        Busca por um cliente na tabela pelo seu ID e o seleciona programaticamente.
+        """
+        # Garante que a lista de clientes esteja atualizada
+        self.populate_treeview()
+        
+        # Itera sobre todos os itens na tabela
+        for item_id in self.tree.get_children():
+            # Pega os valores da linha atual
+            item_values = self.tree.item(item_id, 'values')
+            # O ID do cliente é o primeiro valor (índice 0)
+            if item_values and int(item_values[0]) == client_id_to_select:
+                # Limpa qualquer seleção anterior
+                self.tree.selection_set(())
+                # Seleciona o item encontrado
+                self.tree.selection_set(item_id)
+                # Foca e garante que o item esteja visível (rola a tabela se necessário)
+                self.tree.focus(item_id)
+                self.tree.see(item_id)
+                # Dispara o evento de seleção para preencher o formulário
+                self.on_item_select(None)
+                return # Para a busca assim que encontrar

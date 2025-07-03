@@ -6,27 +6,26 @@ class LicenseFrame(ctk.CTkFrame):
     """
     Frame que exibe o status da licença e permite a ativação do produto.
     """
-    def __init__(self, parent, on_activation_success):
+    def __init__(self, parent, on_activation_success_callback):
         super().__init__(parent, fg_color="transparent")
-        # Armazena a função de callback para ser chamada depois
-        self.on_activation_success = on_activation_success
+        self.on_activation_success = on_activation_success_callback
         
         self.grid_columnconfigure(0, weight=1)
 
-        # --- Frame Principal para Centralizar Conteúdo ---
+        # Frame para centralizar o conteúdo na tela
         center_frame = ctk.CTkFrame(self)
         center_frame.grid(row=0, column=0, padx=20, pady=20)
         
-        # --- Status da Licença ---
-        self.status_title_label = ctk.CTkLabel(center_frame, text="Status da Licença:", font=ctk.CTkFont(size=16, weight="bold"))
-        self.status_title_label.pack(pady=(20, 5))
+        # --- Seção de ID da Máquina ---
+        ctk.CTkLabel(center_frame, text="Seu ID de Máquina (para ativação):", font=ctk.CTkFont(size=12, weight="bold")).pack(pady=(20, 5))
         
-        self.status_value_label = ctk.CTkLabel(center_frame, text="", font=ctk.CTkFont(size=20, weight="bold"))
-        self.status_value_label.pack(pady=(0, 20))
+        # Variável para armazenar e exibir o ID da máquina
+        self.machine_id_var = ctk.StringVar(value="Gerando...")
+        machine_id_entry = ctk.CTkEntry(center_frame, textvariable=self.machine_id_var, state="readonly", width=360, justify='center')
+        machine_id_entry.pack(pady=5)
         
         # --- Seção de Ativação ---
-        self.key_entry_label = ctk.CTkLabel(center_frame, text="Insira a chave de licença para ativar todas as funcionalidades:")
-        self.key_entry_label.pack(pady=(20, 5))
+        ctk.CTkLabel(center_frame, text="Insira a chave de licença recebida:", font=ctk.CTkFont(size=14, weight="bold")).pack(pady=(20, 5))
         
         self.entry_key = ctk.CTkEntry(center_frame, placeholder_text="CRM-NOME-XXXX-XXXX-XXXX-XXXX", width=360)
         self.entry_key.pack(pady=10)
@@ -35,28 +34,42 @@ class LicenseFrame(ctk.CTkFrame):
         self.btn_activate.pack(pady=10)
         
         # --- Contato para Licença ---
-        self.contact_label = ctk.CTkLabel(center_frame, text="\nPara adquirir uma licença ou obter suporte, entre em contato:\nteamzatha@gmail.com",
-                                          font=ctk.CTkFont(size=12))
+        self.contact_label = ctk.CTkLabel(center_frame, text="\nPara adquirir uma licença, envie seu 'ID de Máquina' para:\nteamzatha@gmail.com", font=ctk.CTkFont(size=12))
         self.contact_label.pack(pady=(30, 20))
 
+        # Verifica o status da licença ao iniciar a tela
         self.check_and_display_status()
 
     def check_and_display_status(self):
-        """Verifica a licença e atualiza a interface de acordo."""
+        """
+        Verifica a licença e atualiza a interface de acordo.
+        """
+        # Obtém e exibe o ID da máquina atual
+        machine_id = license_manager.get_machine_id()
+        self.machine_id_var.set(machine_id)
+        
+        # Verifica se a licença está ativa
         if license_manager.check_license():
-            self.status_value_label.configure(text="ATIVADO", text_color="green")
-            self.entry_key.configure(state="disabled", placeholder_text="Produto já ativado.")
+            self.entry_key.configure(state="disabled", placeholder_text="Produto ativado nesta máquina.")
             self.btn_activate.configure(state="disabled")
         else:
-            self.status_value_label.configure(text="NÃO ATIVADO (Modo de Visualização)", text_color="red")
             self.entry_key.configure(state="normal")
             self.btn_activate.configure(state="normal")
             
     def activate(self):
+        """
+        Tenta ativar o produto com a chave inserida.
+        """
         key = self.entry_key.get().strip()
+        if not key:
+            messagebox.showwarning("Campo Vazio", "Por favor, insira a chave de licença.")
+            return
+            
+        # Chama a função de ativação do license_manager
         if license_manager.activate_license(key):
             messagebox.showinfo("Sucesso", "Produto ativado com sucesso! Todas as funcionalidades foram liberadas.")
-            self.check_and_display_status() # Atualiza o status na tela
-            self.on_activation_success() # Avisa o app principal que a ativação ocorreu
+            self.check_and_display_status() # Atualiza a UI para o estado "ativado"
+            self.on_activation_success() # Avisa a aplicação principal sobre o sucesso
         else:
-            messagebox.showerror("Erro", "Chave de licença inválida.")
+            messagebox.showerror("Erro", "Chave de licença inválida ou para outra máquina.")
+

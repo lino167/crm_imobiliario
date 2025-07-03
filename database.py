@@ -6,6 +6,9 @@ class Database:
     Classe responsável por gerenciar todas as operações com o banco de dados SQLite.
     """
     def __init__(self, db_name="crm_imobiliario.db"):
+        """
+        Construtor da classe. Conecta-se ao banco e cria as tabelas se não existirem.
+        """
         self.db_name = db_name
         self.conn = None
         try:
@@ -19,6 +22,7 @@ class Database:
         Estabelece a conexão com o arquivo do banco de dados SQLite.
         """
         self.conn = sqlite3.connect(self.db_name)
+        # Habilita o suporte a chaves estrangeiras
         self.conn.execute("PRAGMA foreign_keys = ON")
         self.cursor = self.conn.cursor()
         print("Conexão com o banco de dados estabelecida com sucesso.")
@@ -28,7 +32,7 @@ class Database:
         Cria as tabelas do sistema se elas ainda não existirem.
         """
         try:
-            # --- MUDANÇA AQUI: Adicionados novos campos para o perfil de busca ---
+            # Tabela de Clientes
             self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS clientes (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -45,24 +49,25 @@ class Database:
                 preco_max REAL,
                 proximo_contato TEXT,
                 observacoes TEXT,
-                
-                -- Campos para Matchmaking --
                 tipo_imovel_interesse TEXT,
                 quartos_min_interesse INTEGER,
                 preco_max_interesse REAL
             )
             """)
 
-            # Tabela de Imóveis (sem alterações)
+            # Tabela de Imóveis (Refatorada)
             self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS imoveis (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 codigo_ref TEXT UNIQUE NOT NULL,
-                endereco TEXT,
+                rua TEXT,
+                numero TEXT,
                 bairro TEXT,
+                cidade TEXT,
                 tipo TEXT,
                 quartos INTEGER,
                 suites INTEGER,
+                banheiros INTEGER,
                 vagas INTEGER,
                 area REAL,
                 preco_venda REAL,
@@ -71,7 +76,7 @@ class Database:
             )
             """)
 
-            # Tabela de Interações (sem alterações)
+            # Tabela de Interações
             self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS interacoes (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -89,7 +94,9 @@ class Database:
             print(f"Erro ao criar as tabelas: {e}")
 
     def execute_query(self, query, params=()):
-        """Executa uma query de modificação de dados (INSERT, UPDATE, DELETE)."""
+        """
+        Executa uma query de modificação de dados (INSERT, UPDATE, DELETE).
+        """
         try:
             self.cursor.execute(query, params)
             self.conn.commit()
@@ -99,7 +106,9 @@ class Database:
             raise e
 
     def fetch_query(self, query, params=()):
-        """Executa uma query de busca de dados (SELECT)."""
+        """
+        Executa uma query de busca de dados (SELECT).
+        """
         try:
             self.cursor.execute(query, params)
             return self.cursor.fetchall()
@@ -108,7 +117,9 @@ class Database:
             return []
 
     def close(self):
-        """Fecha a conexão com o banco de dados de forma segura."""
+        """
+        Fecha a conexão com o banco de dados de forma segura.
+        """
         if self.conn:
             self.conn.close()
             print("Conexão com o banco de dados fechada.")

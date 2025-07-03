@@ -4,15 +4,8 @@ import os
 class Database:
     """
     Classe responsável por gerenciar todas as operações com o banco de dados SQLite.
-    Abstrai a lógica de conexão, criação de tabelas e execução de queries.
     """
     def __init__(self, db_name="crm_imobiliario.db"):
-        """
-        Construtor da classe.
-        Conecta-se ao banco de dados e cria as tabelas se não existirem.
-
-        :param db_name: Nome do arquivo do banco de dados (padrão: 'crm_imobiliario.db')
-        """
         self.db_name = db_name
         self.conn = None
         try:
@@ -20,12 +13,10 @@ class Database:
             self.create_tables()
         except sqlite3.Error as e:
             print(f"Erro CRÍTICO na inicialização do banco de dados: {e}")
-            
 
     def connect(self):
         """
-        Estabelece a conexão com o arquivo do banco de dados SQLite
-        e cria o objeto cursor.
+        Estabelece a conexão com o arquivo do banco de dados SQLite.
         """
         self.conn = sqlite3.connect(self.db_name)
         self.conn.execute("PRAGMA foreign_keys = ON")
@@ -34,11 +25,10 @@ class Database:
 
     def create_tables(self):
         """
-        Cria as tabelas 'clientes', 'imoveis' e 'interacoes' no banco de dados
-        se elas ainda não existirem. Define a estrutura e os relacionamentos.
+        Cria as tabelas do sistema se elas ainda não existirem.
         """
         try:
-            # Tabela de Clientes: Armazena todas as informações dos clientes.
+            # --- MUDANÇA AQUI: Adicionados novos campos para o perfil de busca ---
             self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS clientes (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -54,12 +44,16 @@ class Database:
                 quartos_min INTEGER,
                 preco_max REAL,
                 proximo_contato TEXT,
-                observacoes TEXT
+                observacoes TEXT,
+                
+                -- Campos para Matchmaking --
+                tipo_imovel_interesse TEXT,
+                quartos_min_interesse INTEGER,
+                preco_max_interesse REAL
             )
             """)
 
-            # Tabela de Imóveis: Catálogo de propriedades.
-            # O campo 'codigo_ref' deve ser único para evitar duplicatas.
+            # Tabela de Imóveis (sem alterações)
             self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS imoveis (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -77,7 +71,7 @@ class Database:
             )
             """)
 
-            # Tabela de Interações: Registra as interações com os clientes.
+            # Tabela de Interações (sem alterações)
             self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS interacoes (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -95,13 +89,7 @@ class Database:
             print(f"Erro ao criar as tabelas: {e}")
 
     def execute_query(self, query, params=()):
-        """
-        Executa uma query de modificação de dados (INSERT, UPDATE, DELETE).
-
-        :param query: A string da query SQL.
-        :param params: Uma tupla de parâmetros para a query, para evitar SQL Injection.
-        :return: O ID da última linha inserida, se aplicável.
-        """
+        """Executa uma query de modificação de dados (INSERT, UPDATE, DELETE)."""
         try:
             self.cursor.execute(query, params)
             self.conn.commit()
@@ -111,13 +99,7 @@ class Database:
             raise e
 
     def fetch_query(self, query, params=()):
-        """
-        Executa uma query de busca de dados (SELECT).
-
-        :param query: A string da query SQL.
-        :param params: Uma tupla de parâmetros para a query.
-        :return: Uma lista de tuplas contendo os resultados da busca.
-        """
+        """Executa uma query de busca de dados (SELECT)."""
         try:
             self.cursor.execute(query, params)
             return self.cursor.fetchall()

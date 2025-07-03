@@ -1,6 +1,7 @@
 import customtkinter as ctk
 from tkinter import ttk, messagebox
 from datetime import datetime
+import sqlite3
 
 class ClientsFrame(ctk.CTkFrame):
     """
@@ -20,7 +21,7 @@ class ClientsFrame(ctk.CTkFrame):
         self.form_frame.grid_columnconfigure((1, 3), weight=1)
 
         # --- Widgets do Formulário ---
-        # Linha 1
+        # Linha 1: Informações Pessoais
         ctk.CTkLabel(self.form_frame, text="Nome Completo:").grid(row=0, column=0, padx=(10,5), pady=5, sticky="w")
         self.entry_nome = ctk.CTkEntry(self.form_frame, placeholder_text="Nome do cliente")
         self.entry_nome.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
@@ -29,23 +30,40 @@ class ClientsFrame(ctk.CTkFrame):
         self.entry_telefone = ctk.CTkEntry(self.form_frame, placeholder_text="(00) 90000-0000")
         self.entry_telefone.grid(row=0, column=3, padx=(5,10), pady=5, sticky="ew")
 
-        # Linha 2
+        # Linha 2: Informações de Contato
         ctk.CTkLabel(self.form_frame, text="Email:").grid(row=1, column=0, padx=(10,5), pady=5, sticky="w")
         self.entry_email = ctk.CTkEntry(self.form_frame, placeholder_text="email@exemplo.com")
         self.entry_email.grid(row=1, column=1, padx=5, pady=5, sticky="ew")
 
-        ctk.CTkLabel(self.form_frame, text="Status:").grid(row=1, column=2, padx=(10,5), pady=5, sticky="w")
-        self.combo_status = ctk.CTkComboBox(self.form_frame, values=["Prospect", "Contatado", "Visitando", "Em Negociação", "Comprador", "Inativo"])
-        self.combo_status.grid(row=1, column=3, padx=(5,10), pady=5, sticky="ew")
-
-        # Linha 3 (Nova)
-        ctk.CTkLabel(self.form_frame, text="Próximo Contato:").grid(row=2, column=0, padx=(10,5), pady=5, sticky="w")
+        ctk.CTkLabel(self.form_frame, text="Próximo Contato:").grid(row=1, column=2, padx=(10,5), pady=5, sticky="w")
         self.entry_prox_contato = ctk.CTkEntry(self.form_frame, placeholder_text="DD/MM/AAAA")
-        self.entry_prox_contato.grid(row=2, column=1, padx=5, pady=5, sticky="ew")
+        self.entry_prox_contato.grid(row=1, column=3, padx=(5,10), pady=5, sticky="ew")
+
+        # --- Seção "Perfil de Busca" ---
+        profile_label = ctk.CTkLabel(self.form_frame, text="Perfil de Busca do Cliente", font=ctk.CTkFont(size=12, weight="bold"))
+        profile_label.grid(row=2, column=0, columnspan=4, padx=10, pady=(10,0), sticky="w")
+
+        # Linha 3: Perfil de Busca
+        ctk.CTkLabel(self.form_frame, text="Tipo de Imóvel:").grid(row=3, column=0, padx=(10,5), pady=5, sticky="w")
+        self.combo_tipo_interesse = ctk.CTkComboBox(self.form_frame, values=["", "Apartamento", "Casa", "Terreno", "Comercial"])
+        self.combo_tipo_interesse.grid(row=3, column=1, padx=5, pady=5, sticky="ew")
+
+        ctk.CTkLabel(self.form_frame, text="Quartos (mín.):").grid(row=3, column=2, padx=(10,5), pady=5, sticky="w")
+        self.entry_quartos_min = ctk.CTkEntry(self.form_frame, placeholder_text="Ex: 3")
+        self.entry_quartos_min.grid(row=3, column=3, padx=(5,10), pady=5, sticky="ew")
+        
+        # Linha 4: Perfil de Busca
+        ctk.CTkLabel(self.form_frame, text="Preço (máx.) R$:").grid(row=4, column=0, padx=(10,5), pady=5, sticky="w")
+        self.entry_preco_max = ctk.CTkEntry(self.form_frame, placeholder_text="Ex: 500000.00")
+        self.entry_preco_max.grid(row=4, column=1, padx=5, pady=5, sticky="ew")
+
+        ctk.CTkLabel(self.form_frame, text="Status:").grid(row=4, column=2, padx=(10,5), pady=5, sticky="w")
+        self.combo_status = ctk.CTkComboBox(self.form_frame, values=["Prospect", "Contatado", "Visitando", "Em Negociação", "Comprador", "Inativo"])
+        self.combo_status.grid(row=4, column=3, padx=(5,10), pady=5, sticky="ew")
 
         # --- Frame de Botões ---
         self.button_frame = ctk.CTkFrame(self.form_frame)
-        self.button_frame.grid(row=3, column=0, columnspan=4, padx=10, pady=10, sticky="ew")
+        self.button_frame.grid(row=5, column=0, columnspan=4, padx=10, pady=10, sticky="ew")
         self.button_frame.grid_columnconfigure((0,1,2,3), weight=1)
 
         self.btn_add = ctk.CTkButton(self.button_frame, text="Adicionar Cliente", command=self.add_client)
@@ -122,6 +140,10 @@ class ClientsFrame(ctk.CTkFrame):
             self.entry_telefone.insert(0, data[5] or "")
             self.entry_email.insert(0, data[6] or "")
             self.entry_prox_contato.insert(0, data[12] or "")
+            # Preenche os novos campos de perfil de busca
+            self.combo_tipo_interesse.set(data[14] or "")
+            self.entry_quartos_min.insert(0, str(data[15] or ""))
+            self.entry_preco_max.insert(0, str(data[16] or ""))
 
     def add_client(self):
         nome = self.entry_nome.get().strip()
@@ -130,8 +152,19 @@ class ClientsFrame(ctk.CTkFrame):
             return
 
         data_cadastro = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        query = "INSERT INTO clientes (data_cadastro, nome_completo, status, telefone, email, proximo_contato) VALUES (?, ?, ?, ?, ?, ?)"
-        params = (data_cadastro, nome, self.combo_status.get(), self.entry_telefone.get(), self.entry_email.get(), self.entry_prox_contato.get())
+
+        try:
+            quartos_min = int(self.entry_quartos_min.get()) if self.entry_quartos_min.get() else None
+            preco_max = float(self.entry_preco_max.get()) if self.entry_preco_max.get() else None
+        except ValueError:
+            messagebox.showerror("Erro de Validação", "Os campos 'Quartos' e 'Preço' devem ser números válidos.")
+            return
+
+        query = """INSERT INTO clientes (data_cadastro, nome_completo, status, telefone, email, proximo_contato, 
+                                        tipo_imovel_interesse, quartos_min_interesse, preco_max_interesse) 
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"""
+        params = (data_cadastro, nome, self.combo_status.get(), self.entry_telefone.get(), self.entry_email.get(), 
+                  self.entry_prox_contato.get(), self.combo_tipo_interesse.get(), quartos_min, preco_max)
         
         try:
             self.db.execute_query(query, params)
@@ -148,8 +181,19 @@ class ClientsFrame(ctk.CTkFrame):
             return
             
         client_id = self.tree.item(selected_item, 'values')[0]
-        query = "UPDATE clientes SET nome_completo=?, status=?, telefone=?, email=?, proximo_contato=? WHERE id=?"
-        params = (self.entry_nome.get(), self.combo_status.get(), self.entry_telefone.get(), self.entry_email.get(), self.entry_prox_contato.get(), client_id)
+        
+        try:
+            quartos_min = int(self.entry_quartos_min.get()) if self.entry_quartos_min.get() else None
+            preco_max = float(self.entry_preco_max.get()) if self.entry_preco_max.get() else None
+        except ValueError:
+            messagebox.showerror("Erro de Validação", "Os campos 'Quartos' e 'Preço' devem ser números válidos.")
+            return
+
+        query = """UPDATE clientes SET nome_completo=?, status=?, telefone=?, email=?, proximo_contato=?,
+                                     tipo_imovel_interesse=?, quartos_min_interesse=?, preco_max_interesse=?
+                   WHERE id=?"""
+        params = (self.entry_nome.get(), self.combo_status.get(), self.entry_telefone.get(), self.entry_email.get(), 
+                  self.entry_prox_contato.get(), self.combo_tipo_interesse.get(), quartos_min, preco_max, client_id)
         
         try:
             self.db.execute_query(query, params)
@@ -165,6 +209,10 @@ class ClientsFrame(ctk.CTkFrame):
         self.entry_email.delete(0, 'end')
         self.combo_status.set("")
         self.entry_prox_contato.delete(0, 'end')
+        # Limpa os novos campos
+        self.combo_tipo_interesse.set("")
+        self.entry_quartos_min.delete(0, 'end')
+        self.entry_preco_max.delete(0, 'end')
         if clear_selection and self.tree.focus():
             self.tree.selection_remove(self.tree.focus())
 
@@ -211,22 +259,13 @@ class ClientsFrame(ctk.CTkFrame):
         """
         Busca por um cliente na tabela pelo seu ID e o seleciona programaticamente.
         """
-        # Garante que a lista de clientes esteja atualizada
         self.populate_treeview()
-        
-        # Itera sobre todos os itens na tabela
         for item_id in self.tree.get_children():
-            # Pega os valores da linha atual
             item_values = self.tree.item(item_id, 'values')
-            # O ID do cliente é o primeiro valor (índice 0)
             if item_values and int(item_values[0]) == client_id_to_select:
-                # Limpa qualquer seleção anterior
                 self.tree.selection_set(())
-                # Seleciona o item encontrado
                 self.tree.selection_set(item_id)
-                # Foca e garante que o item esteja visível (rola a tabela se necessário)
                 self.tree.focus(item_id)
                 self.tree.see(item_id)
-                # Dispara o evento de seleção para preencher o formulário
                 self.on_item_select(None)
-                return # Para a busca assim que encontrar
+                return

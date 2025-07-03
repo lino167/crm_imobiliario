@@ -2,13 +2,7 @@ import sqlite3
 import os
 
 class Database:
-    """
-    Classe responsável por gerenciar todas as operações com o banco de dados SQLite.
-    """
     def __init__(self, db_name="crm_imobiliario.db"):
-        """
-        Construtor da classe. Conecta-se ao banco e cria as tabelas se não existirem.
-        """
         self.db_name = db_name
         self.conn = None
         try:
@@ -18,21 +12,13 @@ class Database:
             print(f"Erro CRÍTICO na inicialização do banco de dados: {e}")
 
     def connect(self):
-        """
-        Estabelece a conexão com o arquivo do banco de dados SQLite.
-        """
         self.conn = sqlite3.connect(self.db_name)
-        # Habilita o suporte a chaves estrangeiras
         self.conn.execute("PRAGMA foreign_keys = ON")
         self.cursor = self.conn.cursor()
         print("Conexão com o banco de dados estabelecida com sucesso.")
 
     def create_tables(self):
-        """
-        Cria as tabelas do sistema se elas ainda não existirem.
-        """
         try:
-            # Tabela de Clientes
             self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS clientes (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -46,6 +32,7 @@ class Database:
                 observacoes TEXT,
                 
                 -- Perfil de Busca Detalhado --
+                tipo_negocio_interesse TEXT, -- 'Comprar' ou 'Alugar'
                 tipo_imovel_interesse TEXT,
                 preco_min_interesse REAL,
                 preco_max_interesse REAL,
@@ -53,29 +40,26 @@ class Database:
                 banheiros_min_interesse INTEGER,
                 vagas_min_interesse INTEGER,
                 bairros_interesse TEXT,
-                finalidade TEXT, -- Ex: Moradia, Investimento
-                urgencia TEXT, -- Ex: Com Urgência, Flexível, Sondando
-                caracteristicas_desejadas TEXT -- Ex: Sacada com churrasqueira, andar alto
+                finalidade TEXT, 
+                urgencia TEXT, 
+                caracteristicas_desejadas TEXT
             )
             """)
 
-            # Tabela de Imóveis (Refatorada)
             self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS imoveis (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 codigo_ref TEXT UNIQUE NOT NULL,
-                rua TEXT,
-                numero TEXT,
-                bairro TEXT,
-                cidade TEXT,
-                tipo TEXT,
-                quartos INTEGER,
-                suites INTEGER,
-                banheiros INTEGER,
-                vagas INTEGER,
-                area REAL,
+                rua TEXT, numero TEXT, bairro TEXT, cidade TEXT,
+                tipo TEXT, quartos INTEGER, suites INTEGER, banheiros INTEGER,
+                vagas INTEGER, area REAL, 
+                
+                -- Novos campos de negócio --
+                tipo_negocio TEXT, -- 'Venda', 'Aluguel', 'Venda e Aluguel'
                 preco_venda REAL,
-                status TEXT,
+                preco_aluguel REAL,
+
+                status TEXT, -- Status do imóvel (Disponível, Alugado, Vendido)
                 link_anuncio TEXT
             )
             """)
@@ -84,11 +68,8 @@ class Database:
             self.cursor.execute("""
             CREATE TABLE IF NOT EXISTS interacoes (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                cliente_id INTEGER,
-                data TEXT NOT NULL,
-                tipo_interacao TEXT,
-                resumo TEXT,
-                imoveis_apresentados TEXT,
+                cliente_id INTEGER, data TEXT NOT NULL, tipo_interacao TEXT,
+                resumo TEXT, imoveis_apresentados TEXT,
                 FOREIGN KEY (cliente_id) REFERENCES clientes (id) ON DELETE CASCADE
             )
             """)
@@ -98,9 +79,6 @@ class Database:
             print(f"Erro ao criar as tabelas: {e}")
 
     def execute_query(self, query, params=()):
-        """
-        Executa uma query de modificação de dados (INSERT, UPDATE, DELETE).
-        """
         try:
             self.cursor.execute(query, params)
             self.conn.commit()
@@ -110,9 +88,6 @@ class Database:
             raise e
 
     def fetch_query(self, query, params=()):
-        """
-        Executa uma query de busca de dados (SELECT).
-        """
         try:
             self.cursor.execute(query, params)
             return self.cursor.fetchall()
@@ -121,9 +96,6 @@ class Database:
             return []
 
     def close(self):
-        """
-        Fecha a conexão com o banco de dados de forma segura.
-        """
         if self.conn:
             self.conn.close()
             print("Conexão com o banco de dados fechada.")

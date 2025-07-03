@@ -60,6 +60,11 @@ class PropertiesFrame(ctk.CTkFrame):
         ctk.CTkLabel(self.form_frame, text="Banheiros:").grid(row=4, column=0, padx=(10,5), pady=5, sticky="w")
         self.entry_banheiros = ctk.CTkEntry(self.form_frame, placeholder_text="Ex: 2")
         self.entry_banheiros.grid(row=4, column=1, padx=5, pady=5, sticky="ew")
+        
+        # --- MUDANÇA AQUI: Adicionado o campo de Vagas de Garagem ---
+        ctk.CTkLabel(self.form_frame, text="Vagas Garagem:").grid(row=4, column=2, padx=(10,5), pady=5, sticky="w")
+        self.entry_vagas = ctk.CTkEntry(self.form_frame, placeholder_text="Ex: 2")
+        self.entry_vagas.grid(row=4, column=3, padx=(5,10), pady=5, sticky="ew")
 
         # --- Frame de Botões ---
         self.button_frame = ctk.CTkFrame(self.form_frame)
@@ -84,7 +89,6 @@ class PropertiesFrame(ctk.CTkFrame):
         self.update_button_states()
 
     def setup_treeview(self):
-        """Configura a aparência e as colunas da tabela de imóveis."""
         style = ttk.Style()
         style.theme_use("default")
         style.configure("Treeview", background="#2a2d2e", foreground="white", rowheight=25, fieldbackground="#343638", bordercolor="#343638", borderwidth=0)
@@ -98,19 +102,8 @@ class PropertiesFrame(ctk.CTkFrame):
         tree_frame.grid_columnconfigure(0, weight=1)
 
         self.tree = ttk.Treeview(tree_frame, columns=("ID", "Código", "Tipo", "Bairro", "Quartos", "Preço"), show='headings')
-        self.tree.heading("ID", text="ID")
-        self.tree.heading("Código", text="Código Ref.")
-        self.tree.heading("Tipo", text="Tipo")
-        self.tree.heading("Bairro", text="Bairro")
-        self.tree.heading("Quartos", text="Quartos")
-        self.tree.heading("Preço", text="Preço (R$)")
-
-        self.tree.column("ID", width=50, anchor="center")
-        self.tree.column("Código", width=120)
-        self.tree.column("Tipo", width=120)
-        self.tree.column("Bairro", width=200)
-        self.tree.column("Quartos", width=80, anchor="center")
-        self.tree.column("Preço", width=120, anchor="e")
+        self.tree.heading("ID", text="ID"); self.tree.heading("Código", text="Código Ref."); self.tree.heading("Tipo", text="Tipo"); self.tree.heading("Bairro", text="Bairro"); self.tree.heading("Quartos", text="Quartos"); self.tree.heading("Preço", text="Preço (R$)")
+        self.tree.column("ID", width=50, anchor="center"); self.tree.column("Código", width=120); self.tree.column("Tipo", width=120); self.tree.column("Bairro", width=200); self.tree.column("Quartos", width=80, anchor="center"); self.tree.column("Preço", width=120, anchor="e")
 
         self.tree.grid(row=0, column=0, sticky="nswe")
         self.tree.bind('<<TreeviewSelect>>', self.on_item_select)
@@ -120,135 +113,72 @@ class PropertiesFrame(ctk.CTkFrame):
         self.tree.configure(yscrollcommand=scrollbar.set)
 
     def populate_treeview(self):
-        """Busca os dados no banco e preenche a tabela de imóveis."""
-        for i in self.tree.get_children():
-            self.tree.delete(i)
-        
+        for i in self.tree.get_children(): self.tree.delete(i)
         query = "SELECT id, codigo_ref, tipo, bairro, quartos, preco_venda FROM imoveis ORDER BY codigo_ref"
         for row in self.db.fetch_query(query):
-            # Formata o preço para o padrão brasileiro (ex: 1.250.000,50)
             preco_formatado = f"{row[5]:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".") if row[5] is not None else "0,00"
             values = row[:5] + (preco_formatado,)
             self.tree.insert("", "end", values=values)
 
     def on_item_select(self, event):
-        """Preenche o formulário quando um imóvel é selecionado na tabela."""
         selected_item = self.tree.focus()
-        if not selected_item:
-            return
-        
+        if not selected_item: return
         property_id = self.tree.item(selected_item, 'values')[0]
         query = "SELECT * FROM imoveis WHERE id = ?"
         property_data = self.db.fetch_query(query, (property_id,))
-
         if property_data:
             data = property_data[0]
             self.clear_fields(clear_selection=False)
-            self.entry_codigo.insert(0, data[1])
-            self.entry_rua.insert(0, data[2] or "")
-            self.entry_numero.insert(0, data[3] or "")
-            self.entry_bairro.insert(0, data[4] or "")
-            self.entry_cidade.insert(0, data[5] or "")
-            self.combo_tipo.set(data[6] or "")
-            self.entry_quartos.insert(0, str(data[7] or ""))
-            self.entry_banheiros.insert(0, str(data[9] or ""))
-            self.entry_preco.insert(0, str(data[12] or ""))
+            self.entry_codigo.insert(0, data[1]); self.entry_rua.insert(0, data[2] or ""); self.entry_numero.insert(0, data[3] or ""); self.entry_bairro.insert(0, data[4] or ""); self.entry_cidade.insert(0, data[5] or ""); self.combo_tipo.set(data[6] or ""); self.entry_quartos.insert(0, str(data[7] or "")); self.entry_banheiros.insert(0, str(data[9] or "")); self.entry_vagas.insert(0, str(data[10] or "")); self.entry_preco.insert(0, str(data[12] or ""))
 
     def add_property(self):
-        """Adiciona um novo imóvel ao banco de dados."""
         codigo = self.entry_codigo.get().strip()
-        if not codigo:
-            messagebox.showerror("Erro de Validação", "O campo 'Código Ref.' é obrigatório.")
-            return
-        
+        if not codigo: messagebox.showerror("Erro de Validação", "O campo 'Código Ref.' é obrigatório."); return
         try:
             quartos = int(self.entry_quartos.get()) if self.entry_quartos.get() else None
             banheiros = int(self.entry_banheiros.get()) if self.entry_banheiros.get() else None
+            vagas = int(self.entry_vagas.get()) if self.entry_vagas.get() else None
             preco = float(self.entry_preco.get()) if self.entry_preco.get() else 0.0
-        except ValueError:
-            messagebox.showerror("Erro de Validação", "Os campos 'Preço', 'Quartos' e 'Banheiros' devem ser números válidos.")
-            return
-
-        query = "INSERT INTO imoveis (codigo_ref, rua, numero, bairro, cidade, tipo, quartos, banheiros, preco_venda, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-        params = (codigo, self.entry_rua.get(), self.entry_numero.get(), self.entry_bairro.get(), self.entry_cidade.get(), self.combo_tipo.get(), quartos, banheiros, preco, "Disponível")
-        
+        except ValueError: messagebox.showerror("Erro de Validação", "Os campos de preço, quartos, banheiros e vagas devem ser números válidos."); return
+        query = "INSERT INTO imoveis (codigo_ref, rua, numero, bairro, cidade, tipo, quartos, banheiros, vagas, preco_venda, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        params = (codigo, self.entry_rua.get(), self.entry_numero.get(), self.entry_bairro.get(), self.entry_cidade.get(), self.combo_tipo.get(), quartos, banheiros, vagas, preco, "Disponível")
         try:
-            self.db.execute_query(query, params)
-            messagebox.showinfo("Sucesso", "Imóvel adicionado com sucesso!")
-            self.populate_treeview()
-            self.clear_fields()
-        except sqlite3.IntegrityError:
-            messagebox.showerror("Erro de Duplicidade", f"O Código de Referência '{codigo}' já existe no banco de dados.")
-        except Exception as e:
-            messagebox.showerror("Erro de Banco de Dados", f"Não foi possível adicionar o imóvel:\n{e}")
+            self.db.execute_query(query, params); messagebox.showinfo("Sucesso", "Imóvel adicionado com sucesso!"); self.populate_treeview(); self.clear_fields()
+        except sqlite3.IntegrityError: messagebox.showerror("Erro de Duplicidade", f"O Código de Referência '{codigo}' já existe no banco de dados.")
+        except Exception as e: messagebox.showerror("Erro de Banco de Dados", f"Não foi possível adicionar o imóvel:\n{e}")
 
     def update_property(self):
-        """Atualiza os dados de um imóvel selecionado."""
         selected_item = self.tree.focus()
-        if not selected_item:
-            messagebox.showwarning("Seleção Necessária", "Selecione um imóvel na tabela para atualizar.")
-            return
-
+        if not selected_item: messagebox.showwarning("Seleção Necessária", "Selecione um imóvel na tabela para atualizar."); return
         try:
             quartos = int(self.entry_quartos.get()) if self.entry_quartos.get() else None
             banheiros = int(self.entry_banheiros.get()) if self.entry_banheiros.get() else None
+            vagas = int(self.entry_vagas.get()) if self.entry_vagas.get() else None
             preco = float(self.entry_preco.get()) if self.entry_preco.get() else 0.0
-        except ValueError:
-            messagebox.showerror("Erro de Validação", "Os campos 'Preço', 'Quartos' e 'Banheiros' devem ser números válidos.")
-            return
-            
+        except ValueError: messagebox.showerror("Erro de Validação", "Os campos de preço, quartos, banheiros e vagas devem ser números válidos."); return
         property_id = self.tree.item(selected_item, 'values')[0]
-        query = "UPDATE imoveis SET codigo_ref=?, rua=?, numero=?, bairro=?, cidade=?, tipo=?, quartos=?, banheiros=?, preco_venda=? WHERE id=?"
-        params = (self.entry_codigo.get(), self.entry_rua.get(), self.entry_numero.get(), self.entry_bairro.get(), self.entry_cidade.get(), self.combo_tipo.get(), quartos, banheiros, preco, property_id)
-        
+        query = "UPDATE imoveis SET codigo_ref=?, rua=?, numero=?, bairro=?, cidade=?, tipo=?, quartos=?, banheiros=?, vagas=?, preco_venda=? WHERE id=?"
+        params = (self.entry_codigo.get(), self.entry_rua.get(), self.entry_numero.get(), self.entry_bairro.get(), self.entry_cidade.get(), self.combo_tipo.get(), quartos, banheiros, vagas, preco, property_id)
         try:
-            self.db.execute_query(query, params)
-            messagebox.showinfo("Sucesso", "Imóvel atualizado com sucesso!")
-            self.populate_treeview()
-            self.clear_fields()
-        except sqlite3.IntegrityError:
-            messagebox.showerror("Erro de Duplicidade", "O Código de Referência inserido já pertence a outro imóvel.")
-        except Exception as e:
-            messagebox.showerror("Erro de Banco de Dados", f"Não foi possível atualizar o imóvel:\n{e}")
+            self.db.execute_query(query, params); messagebox.showinfo("Sucesso", "Imóvel atualizado com sucesso!"); self.populate_treeview(); self.clear_fields()
+        except sqlite3.IntegrityError: messagebox.showerror("Erro de Duplicidade", "O Código de Referência inserido já pertence a outro imóvel.")
+        except Exception as e: messagebox.showerror("Erro de Banco de Dados", f"Não foi possível atualizar o imóvel:\n{e}")
 
     def delete_property(self):
-        """Deleta um imóvel selecionado."""
         selected_item = self.tree.focus()
-        if not selected_item:
-            messagebox.showwarning("Seleção Necessária", "Selecione um imóvel para deletar.")
-            return
-        
+        if not selected_item: messagebox.showwarning("Seleção Necessária", "Selecione um imóvel para deletar."); return
         if messagebox.askyesno("Confirmar Exclusão", "Você tem certeza que deseja deletar este imóvel?"):
             property_id = self.tree.item(selected_item, 'values')[0]
             try:
-                self.db.execute_query("DELETE FROM imoveis WHERE id=?", (property_id,))
-                messagebox.showinfo("Sucesso", "Imóvel deletado com sucesso!")
-                self.populate_treeview()
-                self.clear_fields()
-            except Exception as e:
-                messagebox.showerror("Erro", f"Não foi possível deletar o imóvel:\n{e}")
+                self.db.execute_query("DELETE FROM imoveis WHERE id=?", (property_id,)); messagebox.showinfo("Sucesso", "Imóvel deletado com sucesso!"); self.populate_treeview(); self.clear_fields()
+            except Exception as e: messagebox.showerror("Erro", f"Não foi possível deletar o imóvel:\n{e}")
 
     def clear_fields(self, clear_selection=True):
-        """Limpa todos os campos do formulário."""
-        self.entry_codigo.delete(0, 'end')
-        self.entry_rua.delete(0, 'end')
-        self.entry_numero.delete(0, 'end')
-        self.entry_bairro.delete(0, 'end')
-        self.entry_cidade.delete(0, 'end')
-        self.entry_preco.delete(0, 'end')
-        self.combo_tipo.set("")
-        self.entry_quartos.delete(0, 'end')
-        self.entry_banheiros.delete(0, 'end')
-        if clear_selection and self.tree.focus():
-            self.tree.selection_remove(self.tree.focus())
+        self.entry_codigo.delete(0, 'end'); self.entry_rua.delete(0, 'end'); self.entry_numero.delete(0, 'end'); self.entry_bairro.delete(0, 'end'); self.entry_cidade.delete(0, 'end'); self.entry_preco.delete(0, 'end'); self.combo_tipo.set(""); self.entry_quartos.delete(0, 'end'); self.entry_banheiros.delete(0, 'end'); self.entry_vagas.delete(0, 'end')
+        if clear_selection and self.tree.focus(): self.tree.selection_remove(self.tree.focus())
 
     def update_button_states(self):
-        """Ativa ou desativa os botões baseando-se no status da licença."""
         if self.app.is_activated:
-            self.btn_add.configure(state="normal", text="Adicionar Imóvel")
-            self.btn_update.configure(state="normal")
-            self.btn_delete.configure(state="normal")
+            self.btn_add.configure(state="normal", text="Adicionar Imóvel"); self.btn_update.configure(state="normal"); self.btn_delete.configure(state="normal")
         else:
-            self.btn_add.configure(state="disabled", text="Adicionar (Requer Ativação)")
-            self.btn_update.configure(state="disabled")
-            self.btn_delete.configure(state="disabled")
+            self.btn_add.configure(state="disabled", text="Adicionar (Requer Ativação)"); self.btn_update.configure(state="disabled"); self.btn_delete.configure(state="disabled")

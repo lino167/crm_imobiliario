@@ -3,21 +3,17 @@ from tkinter import ttk, messagebox
 from datetime import datetime
 
 class ClientsFrame(ctk.CTkFrame):
-    """
-    Frame que contém a interface e a lógica para o gerenciamento de clientes.
-    """
-    def __init__(self, parent, db):
+    def __init__(self, parent, db, app_ref):
         super().__init__(parent, fg_color="transparent")
         self.db = db
+        self.app = app_ref 
+        
         self.grid_columnconfigure(0, weight=1)
-        self.grid_rowconfigure(1, weight=1)
-
-        # --- Frame do Formulário ---
+        self.grid_rowconfigure(1, weight=1) 
         self.form_frame = ctk.CTkFrame(self)
         self.form_frame.grid(row=0, column=0, sticky="ew", padx=10, pady=10)
         self.form_frame.grid_columnconfigure(1, weight=1)
         self.form_frame.grid_columnconfigure(3, weight=1)
-
         ctk.CTkLabel(self.form_frame, text="Nome Completo:").grid(row=0, column=0, padx=(10,5), pady=5, sticky="w")
         self.entry_nome = ctk.CTkEntry(self.form_frame, placeholder_text="Nome do cliente")
         self.entry_nome.grid(row=0, column=1, padx=5, pady=5, sticky="ew")
@@ -30,7 +26,6 @@ class ClientsFrame(ctk.CTkFrame):
         ctk.CTkLabel(self.form_frame, text="Status:").grid(row=1, column=2, padx=(10,5), pady=5, sticky="w")
         self.combo_status = ctk.CTkComboBox(self.form_frame, values=["Prospect", "Contatado", "Visitando", "Em Negociação", "Comprador", "Inativo"])
         self.combo_status.grid(row=1, column=3, padx=(5,10), pady=5, sticky="ew")
-
         self.button_frame = ctk.CTkFrame(self.form_frame)
         self.button_frame.grid(row=2, column=0, columnspan=4, padx=10, pady=10, sticky="ew")
         self.button_frame.grid_columnconfigure((0,1,2,3), weight=1)
@@ -45,6 +40,19 @@ class ClientsFrame(ctk.CTkFrame):
 
         self.setup_treeview()
         self.populate_treeview()
+        
+        self.update_button_states()
+
+    def update_button_states(self):
+        """Ativa ou desativa os botões baseando-se no status da licença."""
+        if self.app.is_activated:
+            self.btn_add.configure(state="normal")
+            self.btn_update.configure(state="normal")
+            self.btn_delete.configure(state="normal")
+        else:
+            self.btn_add.configure(state="disabled", text="Adicionar (Requer Ativação)")
+            self.btn_update.configure(state="disabled")
+            self.btn_delete.configure(state="disabled")
 
     def setup_treeview(self):
         style = ttk.Style()

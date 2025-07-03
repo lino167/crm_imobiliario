@@ -2,6 +2,7 @@ import customtkinter as ctk
 from tkinter import ttk, messagebox
 from datetime import datetime
 import sqlite3
+from .match_results_window import MatchResultsWindow
 
 class ClientsFrame(ctk.CTkFrame):
     """
@@ -64,7 +65,7 @@ class ClientsFrame(ctk.CTkFrame):
         # --- Frame de Botões ---
         self.button_frame = ctk.CTkFrame(self.form_frame)
         self.button_frame.grid(row=5, column=0, columnspan=4, padx=10, pady=10, sticky="ew")
-        self.button_frame.grid_columnconfigure((0,1,2,3), weight=1)
+        self.button_frame.grid_columnconfigure((0, 1, 2, 3, 4), weight=1)
 
         self.btn_add = ctk.CTkButton(self.button_frame, text="Adicionar Cliente", command=self.add_client)
         self.btn_add.grid(row=0, column=0, padx=5, pady=5)
@@ -77,6 +78,9 @@ class ClientsFrame(ctk.CTkFrame):
 
         self.btn_clear = ctk.CTkButton(self.button_frame, text="Limpar Campos", command=self.clear_fields, fg_color="gray50", hover_color="gray30")
         self.btn_clear.grid(row=0, column=3, padx=5, pady=5)
+        
+        self.btn_match = ctk.CTkButton(self.button_frame, text="Buscar Imóveis Compatíveis", command=self.find_matching_properties, fg_color="#1F6AA5")
+        self.btn_match.grid(row=0, column=4, padx=5, pady=5)
 
         # --- Tabela (Treeview) ---
         self.setup_treeview()
@@ -140,7 +144,6 @@ class ClientsFrame(ctk.CTkFrame):
             self.entry_telefone.insert(0, data[5] or "")
             self.entry_email.insert(0, data[6] or "")
             self.entry_prox_contato.insert(0, data[12] or "")
-            # Preenche os novos campos de perfil de busca
             self.combo_tipo_interesse.set(data[14] or "")
             self.entry_quartos_min.insert(0, str(data[15] or ""))
             self.entry_preco_max.insert(0, str(data[16] or ""))
@@ -209,7 +212,6 @@ class ClientsFrame(ctk.CTkFrame):
         self.entry_email.delete(0, 'end')
         self.combo_status.set("")
         self.entry_prox_contato.delete(0, 'end')
-        # Limpa os novos campos
         self.combo_tipo_interesse.set("")
         self.entry_quartos_min.delete(0, 'end')
         self.entry_preco_max.delete(0, 'end')
@@ -217,18 +219,18 @@ class ClientsFrame(ctk.CTkFrame):
             self.tree.selection_remove(self.tree.focus())
 
     def update_button_states(self):
-        """Ativa ou desativa os botões baseando-se no status da licença."""
         if self.app.is_activated:
             self.btn_add.configure(state="normal", text="Adicionar Cliente")
             self.btn_update.configure(state="normal")
             self.btn_delete.configure(state="normal")
+            self.btn_match.configure(state="normal")
         else:
             self.btn_add.configure(state="disabled", text="Adicionar (Requer Ativação)")
             self.btn_update.configure(state="disabled")
             self.btn_delete.configure(state="disabled")
+            self.btn_match.configure(state="disabled")
     
     def delete_client(self):
-        """Deleta um cliente selecionado."""
         selected_item = self.tree.focus()
         if not selected_item:
             messagebox.showwarning("Seleção Necessária", "Por favor, selecione um cliente na tabela para deletar.")
@@ -245,20 +247,11 @@ class ClientsFrame(ctk.CTkFrame):
                 messagebox.showerror("Erro de Banco de Dados", f"Não foi possível deletar o cliente:\n{e}")
 
     def get_all_clients_for_combobox(self):
-        """
-        Busca todos os clientes no banco de dados e os formata para uso
-        no ComboBox da tela de interações.
-        
-        :return: Uma lista de strings, cada uma no formato "ID: Nome Completo".
-        """
         query = "SELECT id, nome_completo FROM clientes ORDER BY nome_completo"
         clients = self.db.fetch_query(query)
         return [f"{client[0]}: {client[1]}" for client in clients] if clients else []
 
     def select_client_by_id(self, client_id_to_select):
-        """
-        Busca por um cliente na tabela pelo seu ID e o seleciona programaticamente.
-        """
         self.populate_treeview()
         for item_id in self.tree.get_children():
             item_values = self.tree.item(item_id, 'values')
@@ -269,3 +262,50 @@ class ClientsFrame(ctk.CTkFrame):
                 self.tree.see(item_id)
                 self.on_item_select(None)
                 return
+
+    def find_matching_properties(self):
+        selected_item = self.tree.focus()
+        if not selected_item:
+            messagebox.showwarning("Seleção Necessária", "Por favor, selecione um cliente na tabela para buscar imóveis.")
+            return
+
+        client_id = self.tree.item(selected_item, 'values')[0]
+        query_client_profile = "SELECT tipo_imovel_interesse, quartos_min_interesse, preco_max_interesse FROM clientes WHERE id = ?"
+        profile = self.db.fetch_query(query_client_profile, (client_id,))
+        
+        if not profile:
+            messagebox.showerror("Erro", "Não foi possível encontrar o perfil do cliente selecionado.")
+            return
+
+        tipo_interesse, quartos_min, preco_max = profile[0]
+
+        query = "SELECT codigo_ref, tipo, endereco, quartos, preco_venda FROM imoveis WHERE status = 'Disponível'"
+        params = []
+        
+        if tipo_interesse:
+            query += " AND tipo = ?"
+            params.append(tipo_interesse)
+        if quartos_min is not None and quartos_min > 0:
+            query += " AND quartos >= ?"
+            params.append(quartos_min)
+        if preco_max is not None and preco_max > 0:
+            query += " AND preco_venda <= ?"
+            params.append(preco_max)
+            
+        query += " ORDER BY preco_venda"
+
+        try:
+            results = self.db.fetch_query(query, tuple(params))
+            
+            columns = {
+                "Código Ref.": 120,
+                "Tipo": 120,
+                "Endereço": 250,
+                "Quartos": 80,
+                "Preço (R$)": 120
+            }
+            
+            MatchResultsWindow(master=self.app, title="Imóveis Compatíveis", results=results, columns=columns)
+
+        except Exception as e:
+            messagebox.showerror("Erro na Busca", f"Ocorreu um erro ao buscar os imóveis:\n{e}")

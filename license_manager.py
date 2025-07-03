@@ -13,19 +13,18 @@ def validate_key(key: str) -> bool:
     """
     try:
         parts = key.strip().upper().split('-')
-        if len(parts) < 6 or parts[0] != 'CRM':
+        if len(parts) != 6 or parts[0] != 'CRM':
             return False
 
-        client_identifier_from_key = "-".join(parts[1:-4])
-        key_part = "".join(parts[-4:])
-        sanitized_identifier = re.sub(r'[^A-Z0-9]', '', client_identifier_from_key)
-
-        salted_identifier = sanitized_identifier + SECRET_SALT
+        client_identifier = parts[1]
+        key_part = "".join(parts[2:])
+        
+        salted_identifier = client_identifier + SECRET_SALT
         full_hash = hashlib.sha256(salted_identifier.encode()).hexdigest()
         
         return key_part == full_hash[:16].upper()
-    except Exception as e:
-        print(f"Erro ao validar a chave: {e}")
+    
+    except Exception:
         return False
 
 def activate_license(key: str) -> bool:
@@ -48,7 +47,6 @@ def activate_license(key: str) -> bool:
 def check_license() -> bool:
     """
     Verifica se o arquivo de licença existe e se a chave dentro dele é válida.
-    ESTA É A FUNÇÃO QUE ESTAVA FALTANDO.
     """
     if not os.path.exists(LICENSE_FILE):
         return False
